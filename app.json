@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "demo-app",
+    "slug": "demo-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "demo.expo.ios",
+      "config": {
+          "googleSignIn": {
+              "reservedClientId":"com.googleusercontent.apps.44538382106-lgapuj4di5qjr4fsh8n34vle1oebajt0"
+          }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
+
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "demo.expo.android",
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
