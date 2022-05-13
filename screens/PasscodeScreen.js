@@ -48,7 +48,9 @@ const PasscodeScreen = ({ navigation, route }) => {
                 barStyle="light-content"
             />
             <View style={styles.header}>
-                <Text style={styles.text_header}>Welcome :{data.username}</Text>
+                <Text style={styles.text_header}>
+                    Welcome : {data.username}
+                </Text>
             </View>
             <Animatable.View
                 animation="fadeInUpBig"
@@ -178,7 +180,7 @@ const PasscodeScreen = ({ navigation, route }) => {
                                 },
                             ]}
                         >
-                            Ok
+                            OK
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -194,7 +196,8 @@ const styles = StyleSheet.create({
     },
     header: {
         flex: 1,
-        justifyContent: "flex-end",
+        justifyContent: "center",
+        alignItems: "center",
         paddingHorizontal: 20,
         paddingBottom: 50,
     },
@@ -255,8 +258,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     passcodeContainer: {
-        marginHorizontal: 20,
-        marginBottom: 20,
+        margin: 20,
         justifyContent: "space-evenly",
         alignItems: "center",
         flexDirection: "row",
@@ -265,6 +267,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         borderColor: COLORS.primary,
         borderWidth: 0.5,
+        margin: 20,
     },
     passcodeText: {
         fontSize: 25,

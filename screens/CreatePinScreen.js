@@ -32,11 +32,19 @@ const CreatePinScreen = ({ navigation, route }) => {
         5: "",
         6: "",
     });
+
     const onCreatePin = (passcode) => {
         data.pin = passcode;
-        database.ref("/users/" + data.userId).update({
+        database.ref("/users/" + data.userId).set({
             username: data.username,
             wallet_Address: data.walletAddress,
+            email: data.email,
+            profile_picture: data.profile_picture,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            created_at: Date.now(),
+            wallet_Address: data.walletAddress,
+            backup: data.backup,
         });
         setAsyncStorage(data.walletAddress, data.pk);
         navigation.navigate("QR Code", { data });
@@ -256,13 +264,13 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     passcodeContainer: {
-        marginHorizontal: 20,
-        marginBottom: 20,
+        margin: 20,
         justifyContent: "space-evenly",
         alignItems: "center",
         flexDirection: "row",
     },
     passcodeBox: {
+        margin: 20,
         borderRadius: 5,
         borderColor: COLORS.primary,
         borderWidth: 0.5,

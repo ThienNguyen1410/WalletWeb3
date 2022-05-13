@@ -15,50 +15,45 @@ import COLORS from "../colors";
 import { useTheme } from "react-native-paper";
 
 const CreateUserScreen = ({ navigation, route }) => {
-    const { user, uid } = route.params;
-    const [data, setData] = React.useState({
-        username: "",
-        userId: uid,
-        pin: {},
-        walletAddress: "",
-        pk: "",
-        check_textInputChange: false,
-        secureTextEntry: true,
-        isValidUser: true,
-    });
+    const { data } = route.params;
+    // const [data, setData] = React.useState({
+    //     username: "",
+    //     userId: uid,
+    //     pin: {},
+    //     walletAddress: "",
+    //     pk: "",
+    //     check_textInputChange: false,
+    //     secureTextEntry: true,
+    //     isValidUser: true,
+    // });
+    console.log("Data on CreateUserScreen : ", data);
 
     const { colors } = useTheme();
     const textInputChange = (val) => {
         if (val.trim().length >= 4) {
-            setData({
-                ...data,
-                username: val,
-                check_textInputChange: true,
-                isValidUser: true,
-            });
+            data.username = val;
+            data.check_textInputChange = true;
+            data.isValidUser = true;
         } else {
-            setData({
-                ...data,
-                username: val,
-                check_textInputChange: false,
-                isValidUser: false,
-            });
+            data.username = val;
+            data.check_textInputChange = false;
+            data.isValidUser = false;
         }
     };
 
-    const handleValidUser = (val) => {
-        if (val.trim().length >= 4) {
-            setData({
-                ...data,
-                isValidUser: true,
-            });
-        } else {
-            setData({
-                ...data,
-                isValidUser: false,
-            });
-        }
-    };
+    // const handleValidUser = (val) => {
+    //     if (val.trim().length >= 4) {
+    //         setData({
+    //             ...data,
+    //             isValidUser: true,
+    //         });
+    //     } else {
+    //         setData({
+    //             ...data,
+    //             isValidUser: false,
+    //         });
+    //     }
+    // };
 
     return (
         <View style={styles.container}>
@@ -67,7 +62,7 @@ const CreateUserScreen = ({ navigation, route }) => {
                 barStyle="light-content"
             />
             <View style={styles.header}>
-                <Text style={styles.text_header}>Wellcome: {user.email}</Text>
+                <Text style={styles.text_header}>Wellcome: {data.email}</Text>
             </View>
             <Animatable.View
                 animation="fadeInUpBig"
@@ -101,9 +96,6 @@ const CreateUserScreen = ({ navigation, route }) => {
                         ]}
                         autoCapitalize="none"
                         onChangeText={(val) => textInputChange(val)}
-                        onEndEditing={(e) =>
-                            handleValidUser(e.nativeEvent.text)
-                        }
                     />
                     {data.check_textInputChange ? (
                         <Animatable.View animation="bounceIn">
@@ -134,8 +126,6 @@ const CreateUserScreen = ({ navigation, route }) => {
                             },
                         ]}
                         onPress={() => {
-                            setData({ ...data, userId: uid });
-                            console.log("data.userId", data.userId);
                             navigation.navigate("CreateWalletScreen", { data });
                         }}
                     >

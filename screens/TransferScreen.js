@@ -30,10 +30,6 @@ const TransferScreen = ({ navigation, route }) => {
         isValidAmount: true,
     });
     const wallet = createWallet(data.pk);
-    const user = {
-        username: "Trang",
-        address: "0x76A95c88CE72C2b820d97e6a38fE72bee4cE23A9",
-    };
 
     const onTransfer = async (wallet) => {
         setLoading(true);

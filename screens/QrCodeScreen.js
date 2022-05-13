@@ -14,6 +14,7 @@ const QrCodeScreen = ({ navigation, route }) => {
             <QRCode
                 value={data.walletAddress}
                 size={250}
+                margin={20}
                 bgColor="#000"
                 fgColor="#fff"
             />
@@ -62,6 +63,7 @@ const styles = StyleSheet.create({
         height: 40,
         marginTop: 20,
         borderWidth: 1,
+        borderRadius: 10,
         textAlign: "center",
     },
 

@@ -6,7 +6,6 @@ import { generateMnemonic, generateWallet } from "../utility";
 
 const CreateWalletScreen = ({ navigation, route }) => {
     const { data } = route.params;
-    console.log("Data in create wallet");
     const [seed, setSeed] = React.useState([]);
 
     useEffect(async () => {

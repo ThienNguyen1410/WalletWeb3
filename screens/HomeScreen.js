@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     RefreshControl,
+    Alert,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -28,7 +29,16 @@ const HomeScreen = ({ navigation, route }) => {
     const [symbol, setSymbol] = useState("");
     const { colors } = useTheme();
     const [refreshing, setRefreshing] = useState(true);
-    const wallet = createWallet(data.pk);
+    let wallet;
+    if (data.pk != null) {
+        wallet = createWallet(data.pk);
+    } else {
+        Alert.alert(
+            "Failed",
+            "Look like you sign in from another device, Please recovery your private key !",
+            [{ text: "OK", onPress: () => navigation.goBack() }]
+        );
+    }
 
     const loadUserData = async () => {
         setRefreshing(false);

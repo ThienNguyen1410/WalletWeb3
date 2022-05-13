@@ -39,7 +39,7 @@ const transferToken = async (wallet, receiver, amount) => {
     const sendAmount = new BigNumber(amount).multipliedBy(decimal18);
     const result = await currencyContract.methods
         .transfer(receiver, sendAmount)
-        .send({ from: wallet.address, gasLimit: 290000 });
+        .send({ from: wallet.address, gasLimit: 290000, gasPrice: 0 });
     return result;
 };
 export { getBalance, createWallet, getSymbol, getNFT, transferToken };

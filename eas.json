@@ -6,7 +6,7 @@
     "development": {
       "distribution": "internal",
       "android": {
-        "gradleCommand": ":app:assembleDebug",
+        "gradleCommand": ":app:assembleRelease",
         "buildType":"apk"
       },
       "ios": {
@@ -14,10 +14,10 @@
       }
     },
     "preview": {
-      "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug"
+        "gradleCommand": ":app:assembleRelease",
+        "buildType":"apk"
       }
     },
     "production": {}
