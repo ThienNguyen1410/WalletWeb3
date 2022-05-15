@@ -17,6 +17,7 @@ import { auth, database } from "../firebase/config";
 import { GoogleAuthProvider } from "firebase/auth";
 import * as Google from "expo-google-app-auth";
 import * as GooleSignIn from "expo-google-sign-in";
+import { setAsyncStorage } from "../asyncStorage";
 
 const SignInScreen = ({ navigation }) => {
     const { colors } = useTheme();
@@ -105,9 +106,9 @@ const SignInScreen = ({ navigation }) => {
             googleUser.idToken,
             googleUser.accessToken
         );
-
         auth.signInWithCredential(credential)
             .then((result) => {
+                setAsyncStorage("accessToken", googleUser.accessToken);
                 if (result.additionalUserInfo.isNewUser) {
                     let data = {
                         email: result.user.email,
@@ -155,27 +156,27 @@ const SignInScreen = ({ navigation }) => {
             .catch((err) => console.log(err));
     };
     //Build Standard Alone app
-    // const initGoogleSignIn = async () => {
-    //     try {
-    //         await GooleSignIn.initAsync({
-    //             clientId:
-    //                 Platform.OS === "android" ? androidClientId : iosClientId,
-    //         });
-    //     } catch ({ message }) {
-    //         Alert.alert("Error", message, [
-    //             {
-    //                 text: "Cancel",
-    //                 onPress: () => console.log("Cancel Pressed"),
-    //                 style: "cancel",
-    //             },
-    //             { text: "OK", onPress: () => navigation.goBack() },
-    //         ]);
-    //     }
-    // };
+    const initGoogleSignIn = async () => {
+        try {
+            await GooleSignIn.initAsync({
+                clientId:
+                    Platform.OS === "android" ? androidClientId : iosClientId,
+            });
+        } catch ({ message }) {
+            Alert.alert("Error", message, [
+                {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel",
+                },
+                { text: "OK", onPress: () => navigation.goBack() },
+            ]);
+        }
+    };
 
-    // useEffect(() => {
-    //     initGoogleSignIn();
-    // });
+    useEffect(() => {
+        initGoogleSignIn();
+    });
 
     const handleGoogleSignIn = async () => {
         const config = {
@@ -186,16 +187,20 @@ const SignInScreen = ({ navigation }) => {
 
             scope: ["email", "profile"],
         };
+        setAsyncStorage(
+            "clientId",
+            "38761714098-up0ai7rhhvojehmu11fgct1bsksqij6u.apps.googleusercontent.com"
+        );
         try {
             //  Build Standard alone app
-            // await GooleSignIn.askForPlayServicesAsync();
-            // const result = await GooleSignIn.signInAsync();
-            const result = await Google.logInAsync(config);
+            await GooleSignIn.askForPlayServicesAsync();
+            const result = await GooleSignIn.signInAsync();
+            // const result = await Google.logInAsync(config);
             const { type, user } = result;
             if (type == "success") {
                 // Build Standard Alone App
-                // onGoogleSignIn(user.auth);
-                onGoogleSignIn(result);
+                onGoogleSignIn(user.auth);
+                // onGoogleSignIn(result);
             } else {
                 Alert.alert("Cancel SignIn", "Sign In by Google canceled ", [
                     {

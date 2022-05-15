@@ -15,7 +15,7 @@ import { useTheme } from "react-native-paper";
 import { getAsyncStorage } from "../asyncStorage";
 import CryptoJS from "crypto-js";
 import COLORS from "../colors";
-import { createWallet, transferToken } from "../utility/web3Call";
+import { createWallet, transferToken, transferNFT } from "../utility/web3Call";
 
 const PasscodeScreen = ({ navigation, route }) => {
     const { data } = route.params;
@@ -65,7 +65,6 @@ const PasscodeScreen = ({ navigation, route }) => {
     };
 
     const onDecrypt = (encrypted, password) => {
-        console.log("Encrypted in passcode : ", encrypted);
         const decrypted = CryptoJS.AES.decrypt(encrypted, password);
         if (decrypted.toString(CryptoJS.enc.Utf8) != "") {
             if (data.onTransfer) {
@@ -74,6 +73,16 @@ const PasscodeScreen = ({ navigation, route }) => {
                     decrypted.toString(CryptoJS.enc.Utf8)
                 );
                 transferToken(wallet, data.receiver, data.amount)
+                    .then((value) =>
+                        onSuccess(value.transactionHash.toString())
+                    )
+                    .catch((err) => onFailed(err.message));
+            } else if (data.onTransferNFT) {
+                setLoading(true);
+                const wallet = createWallet(
+                    decrypted.toString(CryptoJS.enc.Utf8)
+                );
+                transferNFT(wallet, data.receiver, data.tokenId)
                     .then((value) =>
                         onSuccess(value.transactionHash.toString())
                     )
@@ -89,7 +98,6 @@ const PasscodeScreen = ({ navigation, route }) => {
     };
     const onPasscode = (passcode) => {
         const password = JSON.stringify(passcode) + data.userId;
-        console.log(password);
         if (!isNewDevice) {
             getAsyncStorage(data.userId).then((encrypted) => {
                 onDecrypt(encrypted, password);

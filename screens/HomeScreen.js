@@ -19,13 +19,17 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import COLORS from "../colors";
 import { useTheme } from "react-native-paper";
-import { getBalance, createWallet, getSymbol } from "../utility/web3Call";
+import { getBalance, getSymbol, getAllNft } from "../utility/web3Call";
+import * as GooleSignIn from "expo-google-sign-in";
+import * as Google from "expo-google-app-auth";
+import { clearAsyncStorage, getAsyncStorage } from "../asyncStorage";
 const { width } = Dimensions.get("screen");
-const cardWidth = width / 2 - 20;
+const cardWidth = width / 2 - 40;
 
 const HomeScreen = ({ navigation, route }) => {
     const { data } = route.params;
     const [balance, setBalance] = useState("");
+    const [nft, setNft] = useState([]);
     const [symbol, setSymbol] = useState("");
     const { colors } = useTheme();
     const [refreshing, setRefreshing] = useState(true);
@@ -34,41 +38,83 @@ const HomeScreen = ({ navigation, route }) => {
         setRefreshing(false);
         const newBalance = await getBalance(data.wallet_Address);
         const currencySymbol = await getSymbol();
-        console.log(newBalance.toString());
+        const axieIds = await getAllNft(data.wallet_Address);
+        const axies = axieIds.map((axieId) => {
+            const axies = {
+                id: axieId,
+                name: "Axie Infinity",
+                image: "https://axie.zone/assets/images/axies/star_boy.png",
+            };
+            return axies;
+        });
+        setNft(axies);
         setBalance(newBalance.toString());
         setSymbol(currencySymbol.toString());
+    };
+    // const onSignOut = async () => {
+    //     const clientId = await getAsyncStorage("clientId");
+    //     const accessToken = await getAsyncStorage("accessToken");
+    //     try {
+    //         await Google.logOutAsync({
+    //             accessToken: accessToken,
+    //             iosClientId: clientId,
+    //         });
+    //         clearAsyncStorage();
+    //         navigation.navigate("SignInScreen");
+    //     } catch ({ message }) {
+    //         console.log(message);
+    //         Alert.alert("Error", message, [
+    //             {
+    //                 text: "OK",
+    //                 style: "cancel",
+    //             },
+    //         ]);
+    //     }
+    const onSignOut = async () => {
+        try {
+            if (!__DEV__) {
+                await GooleSignIn.signOutAsync();
+                clearAsyncStorage();
+            } else {
+                clearAsyncStorage();
+            }
+            navigation.navigate("SignInScreen");
+        } catch ({ message }) {
+            Alert.alert("Error", message, [
+                {
+                    text: "OK",
+                    style: "cancel",
+                },
+            ]);
+        }
     };
 
     useEffect(async () => {
         await loadUserData();
     }, []);
 
-    const nft = [
-        {
-            id: "1",
-            name: "Axie 1",
-            ingredients: "Axie infinity",
-            price: "1000$",
-            image: require("../assets/axie1.png"),
-        },
-    ];
-
     const Card = ({ item }) => {
         return (
             <TouchableHighlight
                 underlayColor={COLORS.white}
                 activeOpacity={0.9}
+                onPress={() =>
+                    navigation.navigate("TransferNFTScreen", {
+                        data,
+                        item,
+                    })
+                }
             >
                 <View style={styles.card}>
                     <View style={{ alignItems: "center", top: 10 }}>
                         <Image
-                            source={item.image}
+                            source={{ uri: item.image }}
                             style={{ height: 120, width: 120 }}
                         />
                     </View>
                     <View style={{ marginHorizontal: 20 }}>
                         <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                            {item.name}
+                            ID : {item.id}
                         </Text>
                         <Text
                             style={{
@@ -77,19 +123,7 @@ const HomeScreen = ({ navigation, route }) => {
                                 marginTop: 2,
                             }}
                         >
-                            {item.ingredients}
-                        </Text>
-                    </View>
-                    <View
-                        style={{
-                            marginTop: 10,
-                            marginHorizontal: 20,
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                        }}
-                    >
-                        <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                            {item.price.toLocaleString("en-US")} đ
+                            {item.name}
                         </Text>
                     </View>
                 </View>
@@ -174,6 +208,30 @@ const HomeScreen = ({ navigation, route }) => {
                         />
                     }
                 />
+                <View style={styles.button}>
+                    <TouchableOpacity
+                        style={[
+                            styles.signIn,
+                            {
+                                borderColor: COLORS.primary,
+                                borderWidth: 1,
+                                marginTop: 15,
+                            },
+                        ]}
+                        onPress={() => onSignOut()}
+                    >
+                        <Text
+                            style={[
+                                styles.textSign,
+                                {
+                                    color: COLORS.primary,
+                                },
+                            ]}
+                        >
+                            Sign Out
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </Animatable.View>
         </View>
     );
@@ -251,7 +309,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     card: {
-        height: 220,
+        height: 180,
         width: cardWidth,
         marginHorizontal: 10,
         marginBottom: 20,

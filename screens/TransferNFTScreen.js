@@ -14,32 +14,31 @@ import COLORS from "../colors";
 import { FontAwesome, Feather } from "react-native-vector-icons/";
 import * as Animatable from "react-native-animatable";
 import { useTheme } from "react-native-paper";
-import { database } from "../firebase/config";
 
-const TransferScreen = ({ navigation, route }) => {
-    var { data } = route.params;
+const TransferNFTScreen = ({ navigation, route }) => {
+    var { data, item } = route.params;
     const { colors } = useTheme();
     const [isLoading, setLoading] = useState(false);
 
     const [transaction, setTransaction] = React.useState({
         receiver: "",
-        amount: "",
+        tokenId: parseInt(item.id),
         check_textInputChange: false,
         secureTextEntry: true,
         isValidUser: true,
         isValidAmount: true,
     });
-    const test = { thien: "0x123" };
 
     const onTransfer = async () => {
         const parseReceiver = transaction.receiver.replace(/\s+/g, "");
-
         data = {
             ...data,
-            onTransfer: true,
+            ...item,
+            onTransferNFT: true,
             receiver: parseReceiver,
-            amount: transaction.amount,
+            tokenId: transaction.tokenId,
         };
+        console.log(data);
 
         navigation.navigate("Passcode", { data });
     };
@@ -58,22 +57,6 @@ const TransferScreen = ({ navigation, route }) => {
                 receiver: val,
                 check_textInputChange: false,
                 isValidUser: false,
-            });
-        }
-    };
-
-    const handleAmountChange = (val) => {
-        if (parseInt(val) > 0) {
-            setTransaction({
-                ...transaction,
-                amount: parseInt(val),
-                isValidAmount: true,
-            });
-        } else {
-            setTransaction({
-                ...transaction,
-                amount: val,
-                isValidAmount: false,
             });
         }
     };
@@ -114,13 +97,12 @@ const TransferScreen = ({ navigation, route }) => {
                         },
                     ]}
                 >
-                    Token
+                    Token ID
                 </Text>
                 <View style={styles.action}>
                     <FontAwesome name="user-o" color={colors.text} size={20} />
-                    <TextInput
-                        placeholder="Amount"
-                        keyboardType="number-pad"
+                    <Text
+                        placeholder="Token ID"
                         placeholderTextColor="#666666"
                         style={[
                             styles.textInput,
@@ -129,8 +111,9 @@ const TransferScreen = ({ navigation, route }) => {
                             },
                         ]}
                         autoCapitalize="none"
-                        onChangeText={(val) => handleAmountChange(val)}
-                    />
+                    >
+                        {item.id}
+                    </Text>
                     {transaction.check_textInputChange ? (
                         <Animatable.View animation="bounceIn">
                             <Feather
@@ -141,11 +124,7 @@ const TransferScreen = ({ navigation, route }) => {
                         </Animatable.View>
                     ) : null}
                 </View>
-                {transaction.isValidAmount ? null : (
-                    <Animatable.View animation="fadeInLeft" duration={500}>
-                        <Text style={styles.errorMsg}>Amout Insufficient</Text>
-                    </Animatable.View>
-                )}
+
                 {isLoading ? (
                     <ActivityIndicator size="large" color="#00ff00" />
                 ) : null}
@@ -224,7 +203,7 @@ const TransferScreen = ({ navigation, route }) => {
     );
 };
 
-export default TransferScreen;
+export default TransferNFTScreen;
 
 const styles = StyleSheet.create({
     container: {

@@ -8,6 +8,7 @@ import HomeScreen from "./screens/HomeScreen";
 import SeedPhraseScreen from "./screens/SeedPhraseScreen";
 import QrCodeScreen from "./screens/QrCodeScreen";
 import TransferScreen from "./screens/TransferScreen";
+import TransferNFTScreen from "./screens/TransferNFTScreen";
 import PasscodeScreen from "./screens/PasscodeScreen";
 
 const RootStack = createStackNavigator();
@@ -35,6 +36,10 @@ const SignNavigation = ({ navigation }) => (
         <RootStack.Screen name="HomeScreen" component={HomeScreen} />
         <RootStack.Screen name="Passcode" component={PasscodeScreen} />
         <RootStack.Screen name="TransferScreen" component={TransferScreen} />
+        <RootStack.Screen
+            name="TransferNFTScreen"
+            component={TransferNFTScreen}
+        />
     </RootStack.Navigator>
 );
 
