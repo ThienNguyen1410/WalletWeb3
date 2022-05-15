@@ -7,12 +7,11 @@ import COLORS from "../colors";
 
 const QrCodeScreen = ({ navigation, route }) => {
     const { data } = route.params;
-    console.log("Qr data ", data);
 
     return (
         <View style={styles.MainContainer}>
             <QRCode
-                value={data.walletAddress}
+                value={data.wallet_Address}
                 size={250}
                 margin={20}
                 bgColor="#000"

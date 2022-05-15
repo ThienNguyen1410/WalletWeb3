@@ -14,10 +14,9 @@ import COLORS from "../colors";
 import { FontAwesome, Feather } from "react-native-vector-icons/";
 import * as Animatable from "react-native-animatable";
 import { useTheme } from "react-native-paper";
-import { createWallet, transferToken } from "../utility/web3Call";
 
 const TransferScreen = ({ navigation, route }) => {
-    const { data } = route.params;
+    var { data } = route.params;
     const { colors } = useTheme();
     const [isLoading, setLoading] = useState(false);
 
@@ -29,39 +28,20 @@ const TransferScreen = ({ navigation, route }) => {
         isValidUser: true,
         isValidAmount: true,
     });
-    const wallet = createWallet(data.pk);
 
-    const onTransfer = async (wallet) => {
-        setLoading(true);
-        console.log("Transaction : ", transaction.receiver);
+    const onTransfer = async () => {
         const parseReceiver = transaction.receiver.replace(/\s+/g, "");
 
-        transferToken(wallet, parseReceiver, transaction.amount)
-            .then((value) => onSuccess(value.transactionHash.toString()))
-            .catch((err) => onFailed(err.message));
+        data = {
+            ...data,
+            onTransfer: true,
+            receiver: parseReceiver,
+            amount: transaction.amount,
+        };
+
+        navigation.navigate("Passcode", { data });
     };
-    const onSuccess = (value) => {
-        setLoading(false);
-        Alert.alert("Success", `Transaction Hash:  ${value} `, [
-            {
-                text: "Cancel",
-                onPress: () => console.log("Cancel Pressed"),
-                style: "cancel",
-            },
-            { text: "OK", onPress: () => navigation.goBack() },
-        ]);
-    };
-    const onFailed = (err) => {
-        setLoading(false);
-        Alert.alert("Failed", err, [
-            {
-                text: "Cancel",
-                onPress: () => console.log("Cancel Pressed"),
-                style: "cancel",
-            },
-            { text: "OK", onPress: () => navigation.goBack() },
-        ]);
-    };
+
     const onReceiverChange = (val) => {
         if (val.trim().length >= 42) {
             setTransaction({
@@ -215,7 +195,7 @@ const TransferScreen = ({ navigation, route }) => {
             </Animatable.View>
             <View style={styles.button}>
                 <TouchableOpacity
-                    onPress={() => onTransfer(wallet)}
+                    onPress={() => onTransfer()}
                     disabled={isLoading}
                     style={[
                         styles.signIn,

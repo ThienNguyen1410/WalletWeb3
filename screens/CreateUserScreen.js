@@ -16,17 +16,6 @@ import { useTheme } from "react-native-paper";
 
 const CreateUserScreen = ({ navigation, route }) => {
     const { data } = route.params;
-    // const [data, setData] = React.useState({
-    //     username: "",
-    //     userId: uid,
-    //     pin: {},
-    //     walletAddress: "",
-    //     pk: "",
-    //     check_textInputChange: false,
-    //     secureTextEntry: true,
-    //     isValidUser: true,
-    // });
-    console.log("Data on CreateUserScreen : ", data);
 
     const { colors } = useTheme();
     const textInputChange = (val) => {
@@ -40,20 +29,6 @@ const CreateUserScreen = ({ navigation, route }) => {
             data.isValidUser = false;
         }
     };
-
-    // const handleValidUser = (val) => {
-    //     if (val.trim().length >= 4) {
-    //         setData({
-    //             ...data,
-    //             isValidUser: true,
-    //         });
-    //     } else {
-    //         setData({
-    //             ...data,
-    //             isValidUser: false,
-    //         });
-    //     }
-    // };
 
     return (
         <View style={styles.container}>
@@ -137,7 +112,7 @@ const CreateUserScreen = ({ navigation, route }) => {
                                 },
                             ]}
                         >
-                            Sign In
+                            Next
                         </Text>
                     </TouchableOpacity>
                 </View>

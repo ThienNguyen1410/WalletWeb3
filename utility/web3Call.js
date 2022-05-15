@@ -17,11 +17,9 @@ const createWallet = (privateKey) => {
     return wallet;
 };
 
-const getBalance = async (wallet) => {
+const getBalance = async (address) => {
     const decimal = new BigNumber(10).pow(18);
-    const result = await currencyContract.methods
-        .balanceOf(wallet.address)
-        .call();
+    const result = await currencyContract.methods.balanceOf(address).call();
     const balance = new BigNumber(result).dividedBy(decimal);
     return balance;
 };
@@ -39,7 +37,7 @@ const transferToken = async (wallet, receiver, amount) => {
     const sendAmount = new BigNumber(amount).multipliedBy(decimal18);
     const result = await currencyContract.methods
         .transfer(receiver, sendAmount)
-        .send({ from: wallet.address, gasLimit: 290000, gasPrice: 0 });
+        .send({ from: wallet.address, gasLimit: 290000 });
     return result;
 };
 export { getBalance, createWallet, getSymbol, getNFT, transferToken };

@@ -29,20 +29,10 @@ const HomeScreen = ({ navigation, route }) => {
     const [symbol, setSymbol] = useState("");
     const { colors } = useTheme();
     const [refreshing, setRefreshing] = useState(true);
-    let wallet;
-    if (data.pk != null) {
-        wallet = createWallet(data.pk);
-    } else {
-        Alert.alert(
-            "Failed",
-            "Look like you sign in from another device, Please recovery your private key !",
-            [{ text: "OK", onPress: () => navigation.goBack() }]
-        );
-    }
 
     const loadUserData = async () => {
         setRefreshing(false);
-        const newBalance = await getBalance(wallet);
+        const newBalance = await getBalance(data.wallet_Address);
         const currencySymbol = await getSymbol();
         console.log(newBalance.toString());
         setBalance(newBalance.toString());
@@ -53,8 +43,6 @@ const HomeScreen = ({ navigation, route }) => {
         await loadUserData();
     }, []);
 
-    console.log("Data on HomeScreen : ", data);
-
     const nft = [
         {
             id: "1",
@@ -62,13 +50,6 @@ const HomeScreen = ({ navigation, route }) => {
             ingredients: "Axie infinity",
             price: "1000$",
             image: require("../assets/axie1.png"),
-        },
-        {
-            id: "2",
-            name: "Axie 2",
-            ingredients: "Axie infinity",
-            price: "9999$",
-            image: require("../assets/axie2.png"),
         },
     ];
 

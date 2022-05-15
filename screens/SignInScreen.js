@@ -122,7 +122,7 @@ const SignInScreen = ({ navigation }) => {
                         userId: result.user.uid,
                         pin: {},
                         pk: "",
-                        walletAddress: "",
+                        wallet_Address: "",
                         backup: "",
                     };
                     navigation.navigate("CreateUserScreen", { data });
@@ -134,18 +134,15 @@ const SignInScreen = ({ navigation }) => {
                             (snapshot) => {
                                 if (snapshot.child("wallet_Address").exists()) {
                                     const username = snapshot.val().username;
+                                    const userId = result.user.uid;
                                     const wallet_Address =
                                         snapshot.val().wallet_Address;
-                                    console.log("Username :", username);
-                                    console.log(
-                                        "Wallet Address",
-                                        wallet_Address
-                                    );
-                                    let pk = "";
+                                    const backup = snapshot.val().backup;
                                     const data = {
                                         username,
+                                        userId,
                                         wallet_Address,
-                                        pk,
+                                        backup,
                                     };
                                     navigation.navigate("Passcode", { data });
                                     setLoading(false);
@@ -156,43 +153,6 @@ const SignInScreen = ({ navigation }) => {
                 }
             })
             .catch((err) => console.log(err));
-
-        // if (result.additionalUserInfo.isNewUser) {
-        //     setData({
-        //         email: result.user.email,
-        //         profile_picture: result.additionalUserInfo.profile.picture,
-        //         first_name: result.additionalUserInfo.profile.given_name,
-        //         last_name: result.additionalUserInfo.profile.family_name,
-        //         created_at: Date.now(),
-        //         userId: result.user.uid,
-        //     });
-
-        //     console.log("Data on SignInScreen call time 1 : ", data);
-        //     console.log("Data on SignInScreen call time 2 : ", data);
-        //     let user = result.user;
-        //     let uid = result.user.uid;
-        //     // navigation.navigate("CreateUserScreen", { data });
-        // } else {
-        //     database
-        //         .ref("/users/" + result.user.uid)
-        //         .once("value")
-        //         .then(
-        //             (snapshot) => {
-        //                 if (snapshot.child("wallet_Address").exists()) {
-        //                     const username = snapshot.val().username;
-        //                     const wallet_Address =
-        //                         snapshot.val().wallet_Address;
-        //                     console.log("Username :", username);
-        //                     console.log("Wallet Address", wallet_Address);
-        //                     let pk = "";
-        //                     const data = { username, wallet_Address, pk };
-        //                     navigation.navigate("Passcode", { data });
-        //                     setLoading(false);
-        //                 }
-        //             },
-        //             (err) => console.log(err)
-        //         );
-        // }
     };
     //Build Standard Alone app
     // const initGoogleSignIn = async () => {
@@ -222,7 +182,8 @@ const SignInScreen = ({ navigation }) => {
             iosClientId:
                 "38761714098-up0ai7rhhvojehmu11fgct1bsksqij6u.apps.googleusercontent.com",
             androidClientId:
-                "44538382106-ib72raq54m933sbf43qo29egq27dsrjq.apps.googleusercontent.com",
+                "38761714098-e335spcpq3jrpa70mic37sm05lm05mb0.apps.googleusercontent.com",
+
             scope: ["email", "profile"],
         };
         try {
@@ -233,7 +194,7 @@ const SignInScreen = ({ navigation }) => {
             const { type, user } = result;
             if (type == "success") {
                 // Build Standard Alone App
-                // await onGoogleSignIn(user.auth);
+                // onGoogleSignIn(user.auth);
                 onGoogleSignIn(result);
             } else {
                 Alert.alert("Cancel SignIn", "Sign In by Google canceled ", [

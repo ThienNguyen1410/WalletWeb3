@@ -6,7 +6,6 @@ import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 
 const SeedPhraseScreen = ({ navigation, route }) => {
     const { seed, data } = route.params;
-    console.log("data in seed phrase ", data);
     const Card = ({ item }) => {
         return (
             <View style={style.card}>

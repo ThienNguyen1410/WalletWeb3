@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 import {
     View,
     Text,
@@ -13,6 +13,8 @@ import { useTheme } from "react-native-paper";
 import { database } from "../firebase/config";
 import { setAsyncStorage } from "../asyncStorage";
 import COLORS from "../colors";
+import CryptoES from "crypto-es";
+import CryptoJS from "crypto-js";
 
 const CreatePinScreen = ({ navigation, route }) => {
     const { data } = route.params;
@@ -35,6 +37,9 @@ const CreatePinScreen = ({ navigation, route }) => {
 
     const onCreatePin = (passcode) => {
         data.pin = passcode;
+        const password = JSON.stringify(passcode) + data.userId;
+        const encrypted = CryptoES.AES.encrypt(data.pk, password).toString();
+
         database.ref("/users/" + data.userId).set({
             username: data.username,
             wallet_Address: data.walletAddress,
@@ -43,10 +48,11 @@ const CreatePinScreen = ({ navigation, route }) => {
             first_name: data.first_name,
             last_name: data.last_name,
             created_at: Date.now(),
-            wallet_Address: data.walletAddress,
-            backup: data.backup,
+            wallet_Address: data.wallet_Address,
+            backup: encrypted,
         });
-        setAsyncStorage(data.walletAddress, data.pk);
+
+        setAsyncStorage(data.userId, encrypted);
         navigation.navigate("QR Code", { data });
     };
 

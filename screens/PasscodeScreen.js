@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -8,16 +8,20 @@ import {
     StyleSheet,
     StatusBar,
     ActivityIndicator,
+    Alert,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { useTheme } from "react-native-paper";
 import { getAsyncStorage } from "../asyncStorage";
+import CryptoJS from "crypto-js";
 import COLORS from "../colors";
+import { createWallet, transferToken } from "../utility/web3Call";
 
 const PasscodeScreen = ({ navigation, route }) => {
     const { data } = route.params;
-    console.log("Data is passcode : ", data);
     const { colors } = useTheme();
+    const [isNewDevice, setNewDevice] = useState(false);
+    const [isLoading, setLoading] = useState(false);
 
     const firstInput = React.useRef();
     const secondInput = React.useRef();
@@ -33,13 +37,82 @@ const PasscodeScreen = ({ navigation, route }) => {
         5: "",
         6: "",
     });
-    const onPasscode = async (passcode) => {
-        data.pin = passcode;
-        const pk = await getAsyncStorage(data.wallet_Address);
-        console.log("Pk : ", pk);
-        data.pk = pk;
-        navigation.navigate("HomeScreen", { data });
+    const onSuccess = (value) => {
+        setLoading(false);
+        Alert.alert("Success", `Transaction Hash:  ${value} `, [
+            {
+                text: "Cancel",
+                style: "cancel",
+            },
+            {
+                text: "OK",
+                onPress: () => navigation.navigate("HomeScreen", { data }),
+            },
+        ]);
     };
+    const onFailed = (err) => {
+        setLoading(false);
+        Alert.alert("Failed", err, [
+            {
+                text: "Cancel",
+                style: "cancel",
+            },
+            {
+                text: "OK",
+                onPress: () => navigation.navigate("HomeScreen", { data }),
+            },
+        ]);
+    };
+
+    const onDecrypt = (encrypted, password) => {
+        console.log("Encrypted in passcode : ", encrypted);
+        const decrypted = CryptoJS.AES.decrypt(encrypted, password);
+        if (decrypted.toString(CryptoJS.enc.Utf8) != "") {
+            if (data.onTransfer) {
+                setLoading(true);
+                const wallet = createWallet(
+                    decrypted.toString(CryptoJS.enc.Utf8)
+                );
+                transferToken(wallet, data.receiver, data.amount)
+                    .then((value) =>
+                        onSuccess(value.transactionHash.toString())
+                    )
+                    .catch((err) => onFailed(err.message));
+            } else {
+                navigation.navigate("HomeScreen", { data });
+            }
+        } else {
+            Alert.alert("Wrong Passcode", "Your passcode is invalid ! ", [
+                { text: "OK", style: "cancel" },
+            ]);
+        }
+    };
+    const onPasscode = (passcode) => {
+        const password = JSON.stringify(passcode) + data.userId;
+        console.log(password);
+        if (!isNewDevice) {
+            getAsyncStorage(data.userId).then((encrypted) => {
+                onDecrypt(encrypted, password);
+            });
+        } else {
+            onDecrypt(data.backup, password);
+        }
+    };
+
+    useEffect(async () => {
+        const encrypted = await getAsyncStorage(data.userId);
+        if (encrypted == null && data.backup != "") {
+            setNewDevice(true);
+            Alert.alert(
+                "New device",
+                "Look like you Sign In from new device! \n Do you want restore ?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Restore", style: "cancel" },
+                ]
+            );
+        }
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -72,6 +145,9 @@ const PasscodeScreen = ({ navigation, route }) => {
                 >
                     Pin
                 </Text>
+                {isLoading ? (
+                    <ActivityIndicator size="large" color="#00ff00" />
+                ) : null}
                 <View style={styles.passcodeContainer}>
                     <View style={styles.passcodeBox}>
                         <TextInput
@@ -170,6 +246,7 @@ const PasscodeScreen = ({ navigation, route }) => {
                                 marginTop: 15,
                             },
                         ]}
+                        disabled={isLoading}
                         onPress={() => onPasscode(passcode)}
                     >
                         <Text

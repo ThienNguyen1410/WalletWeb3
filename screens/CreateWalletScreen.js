@@ -1,22 +1,28 @@
-import React, { useEffect } from "react";
-import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+    Text,
+    StyleSheet,
+    View,
+    TouchableOpacity,
+    ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import COLORS from "../colors";
 import { generateMnemonic, generateWallet } from "../utility";
 
 const CreateWalletScreen = ({ navigation, route }) => {
     const { data } = route.params;
-    const [seed, setSeed] = React.useState([]);
+    const [isLoading, setLoading] = useState(false);
 
-    useEffect(async () => {
+    const onCreateWallet = () => {
         const mnemonic = generateMnemonic();
         const wallet = generateWallet(mnemonic);
-        data.walletAddress = await wallet.getAddress();
+        data.wallet_Address = wallet.address;
         data.pk = wallet.privateKey;
         const mnemonics = mnemonic.split(" ");
-        setSeed(mnemonics);
-    }, []);
-
+        const seed = mnemonics;
+        navigation.navigate("Seed Phrase", { seed, data });
+    };
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
             <View style={{ height: 400 }}>
@@ -30,6 +36,9 @@ const CreateWalletScreen = ({ navigation, route }) => {
                     V Wallet
                 </Text>
             </View>
+            {isLoading ? (
+                <ActivityIndicator size="large" color="#00ff00" />
+            ) : null}
             <View style={style.textContainer}>
                 <View>
                     <Text
@@ -51,12 +60,10 @@ const CreateWalletScreen = ({ navigation, route }) => {
                                     marginTop: 15,
                                 },
                             ]}
-                            onPress={() =>
-                                navigation.navigate("Seed Phrase", {
-                                    seed,
-                                    data,
-                                })
-                            }
+                            onPress={() => {
+                                setLoading(true);
+                                onCreateWallet();
+                            }}
                         >
                             <Text style={[style.textSign]}>Create Wallet</Text>
                         </TouchableOpacity>
