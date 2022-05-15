@@ -156,27 +156,27 @@ const SignInScreen = ({ navigation }) => {
             .catch((err) => console.log(err));
     };
     //Build Standard Alone app
-    const initGoogleSignIn = async () => {
-        try {
-            await GooleSignIn.initAsync({
-                clientId:
-                    Platform.OS === "android" ? androidClientId : iosClientId,
-            });
-        } catch ({ message }) {
-            Alert.alert("Error", message, [
-                {
-                    text: "Cancel",
-                    onPress: () => console.log("Cancel Pressed"),
-                    style: "cancel",
-                },
-                { text: "OK", onPress: () => navigation.goBack() },
-            ]);
-        }
-    };
+    // const initGoogleSignIn = async () => {
+    //     try {
+    //         await GooleSignIn.initAsync({
+    //             clientId:
+    //                 Platform.OS === "android" ? androidClientId : iosClientId,
+    //         });
+    //     } catch ({ message }) {
+    //         Alert.alert("Error", message, [
+    //             {
+    //                 text: "Cancel",
+    //                 onPress: () => console.log("Cancel Pressed"),
+    //                 style: "cancel",
+    //             },
+    //             { text: "OK", onPress: () => navigation.goBack() },
+    //         ]);
+    //     }
+    // };
 
-    useEffect(() => {
-        initGoogleSignIn();
-    });
+    // useEffect(() => {
+    //     initGoogleSignIn();
+    // });
 
     const handleGoogleSignIn = async () => {
         const config = {
@@ -193,14 +193,14 @@ const SignInScreen = ({ navigation }) => {
         );
         try {
             //  Build Standard alone app
-            await GooleSignIn.askForPlayServicesAsync();
-            const result = await GooleSignIn.signInAsync();
-            // const result = await Google.logInAsync(config);
+            // await GooleSignIn.askForPlayServicesAsync();
+            // const result = await GooleSignIn.signInAsync();
+            const result = await Google.logInAsync(config);
             const { type, user } = result;
             if (type == "success") {
                 // Build Standard Alone App
-                onGoogleSignIn(user.auth);
-                // onGoogleSignIn(result);
+                // onGoogleSignIn(user.auth);
+                onGoogleSignIn(result);
             } else {
                 Alert.alert("Cancel SignIn", "Sign In by Google canceled ", [
                     {

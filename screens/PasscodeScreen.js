@@ -72,7 +72,7 @@ const PasscodeScreen = ({ navigation, route }) => {
                 const wallet = createWallet(
                     decrypted.toString(CryptoJS.enc.Utf8)
                 );
-                transferToken(wallet, data.receiver, data.amount)
+                transferToken(wallet, data.receiver, parseInt(data.amount))
                     .then((value) =>
                         onSuccess(value.transactionHash.toString())
                     )

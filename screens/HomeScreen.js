@@ -34,6 +34,34 @@ const HomeScreen = ({ navigation, route }) => {
     const { colors } = useTheme();
     const [refreshing, setRefreshing] = useState(true);
 
+    const axiesImage = {
+        1: "https://axie.zone/assets/images/axies/star_boy.png",
+        2: "https://axie.zone/assets/images/axies/froot_loop.png",
+        3: "https://theaxiescholar.com/img/axie-red.png",
+        4: "https://lh3.googleusercontent.com/AkLCMLljZvk1gvQsGlTnOhnNNA4rZpvUJ0nqrSU-6xI42UdWgsWtyBLAY-AA5IKZNdy1mNHmO8_ltxcyPZbyL3Sdgg=w600",
+        5: "https://lh3.googleusercontent.com/9CMgalObOtK7fG3TXVhwS-iAPbWmH8CwjmOskKBdpGIi4QGEpi9MaPD5H9-mylW4ZkBrdve10zxXJu3GIJjARhPf6g=w600",
+        6: "https://lh3.googleusercontent.com/aUqnUWLIs77KoA0TvjIp6iHNBRQidzXM43zYodw2Sm-YKUZmO9A2fsXMUfnXdvfOhr_z3ZLDNbV643S-w7GmAA-j=w600",
+        7: "https://lh3.googleusercontent.com/QBsYeBH7-PWXQZOh225T4JWnjAj_x-9LMXLnHeP8hOA0zox-xrKazOdRXpZEG69aEZdiYYgoLFMGJRFY0g6U7TM=w600",
+        8: "https://lh3.googleusercontent.com/5Dnb0juKgTZMjFWvyMAIPBIlnGtklC-3oHn-MNjZV_q6wTwFHEieFrxqFRCtJphYTEGwz-emAt3CCvBPJT04-js=w600",
+        9: "https://lh3.googleusercontent.com/hJAIv-CjKPxDCyqe-Ftg3nIPvPhmt_SbDHTe-Kh8IuITn4TFDkZtjK0gKDgT0yiBR2aCIORptbLrm6GzXunjUsBdOweEDZUC2px-vw=w600",
+        18: "https://lh3.googleusercontent.com/skFxo1q3HEvKA3kYAteY2YXWjyg1i6dqB8Pe0CfYsmWXPdAfUxfNVqxj3wPDQ-axGLzODP6cAKrKpL4tf7fTgeyK=w600",
+        26: "https://lh3.googleusercontent.com/r-hBsk0XnHEjWBkU9xP3qT13YTcvyEVerDVsOlV2Ep8k4aBQ7GAnUNfCKnDrXHgH2PvzckXlDY-YiVnASP0nwtM=w600",
+        14: "https://lh3.googleusercontent.com/r-hBsk0XnHEjWBkU9xP3qT13YTcvyEVerDVsOlV2Ep8k4aBQ7GAnUNfCKnDrXHgH2PvzckXlDY-YiVnASP0nwtM=w600",
+        15: "https://lh3.googleusercontent.com/joMrC6QAue-EqeF2TF5OYiZDdtzwkm2K8iTd9ZbeiNym9lIhBT9DnNOe81RdBhThy9DD9AdwolwAcC08zKeA3g1C6W3dqqOTpC183cg=w600",
+        32: "https://lh3.googleusercontent.com/W2ouyKBzhXBMkDtxk4nDm9jQrVeuFHR7AwkBlth7gEioUbMkTBT2_ZfxJJi2v-XDzjvSk4OWUha7xyRjKKzYjfqXv-ou8_SyziXX65Q=w600",
+    };
+
+    const selectImage = (axieId) => {
+        var url = "";
+
+        if (axiesImage[axieId] != null) {
+            url = axiesImage[axieId];
+        } else {
+            url = "https://axie.zone/assets/images/axies/star_boy.png";
+        }
+        return url;
+    };
+
     const loadUserData = async () => {
         setRefreshing(false);
         const newBalance = await getBalance(data.wallet_Address);
@@ -43,7 +71,7 @@ const HomeScreen = ({ navigation, route }) => {
             const axies = {
                 id: axieId,
                 name: "Axie Infinity",
-                image: "https://axie.zone/assets/images/axies/star_boy.png",
+                image: selectImage(axieId),
             };
             return axies;
         });
@@ -51,25 +79,7 @@ const HomeScreen = ({ navigation, route }) => {
         setBalance(newBalance.toString());
         setSymbol(currencySymbol.toString());
     };
-    // const onSignOut = async () => {
-    //     const clientId = await getAsyncStorage("clientId");
-    //     const accessToken = await getAsyncStorage("accessToken");
-    //     try {
-    //         await Google.logOutAsync({
-    //             accessToken: accessToken,
-    //             iosClientId: clientId,
-    //         });
-    //         clearAsyncStorage();
-    //         navigation.navigate("SignInScreen");
-    //     } catch ({ message }) {
-    //         console.log(message);
-    //         Alert.alert("Error", message, [
-    //             {
-    //                 text: "OK",
-    //                 style: "cancel",
-    //             },
-    //         ]);
-    //     }
+
     const onSignOut = async () => {
         try {
             if (!__DEV__) {
@@ -141,14 +151,22 @@ const HomeScreen = ({ navigation, route }) => {
                 <FontAwesome name="user-o" color={colors.text} size={20} />
                 <Text style={styles.text_header}>{data.username}</Text>
                 <Text style={styles.text_header}>Balance {balance}</Text>
-                <TouchableOpacity
-                    style={styles.iconContainer}
-                    onPress={() =>
-                        navigation.navigate("TransferScreen", { data })
-                    }
-                >
-                    <Icon name="send" size={20} />
-                </TouchableOpacity>
+                <View flexDirection="row">
+                    <TouchableOpacity
+                        style={styles.iconContainer}
+                        onPress={() =>
+                            navigation.navigate("TransferScreen", { data })
+                        }
+                    >
+                        <Icon name="send" size={20} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.iconContainer}
+                        onPress={() => navigation.navigate("QR Code", { data })}
+                    >
+                        <FontAwesome name="user-o" size={20} />
+                    </TouchableOpacity>
+                </View>
             </View>
             <Animatable.View
                 animation="fadeInUpBig"

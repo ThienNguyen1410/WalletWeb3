@@ -15,12 +15,12 @@ import { FontAwesome, Feather } from "react-native-vector-icons/";
 import * as Animatable from "react-native-animatable";
 import { useTheme } from "react-native-paper";
 import { database } from "../firebase/config";
+import { Picker } from "@react-native-picker/picker";
 
 const TransferScreen = ({ navigation, route }) => {
     var { data } = route.params;
     const { colors } = useTheme();
     const [isLoading, setLoading] = useState(false);
-
     const [transaction, setTransaction] = React.useState({
         receiver: "",
         amount: "",
@@ -29,7 +29,6 @@ const TransferScreen = ({ navigation, route }) => {
         isValidUser: true,
         isValidAmount: true,
     });
-    const test = { thien: "0x123" };
 
     const onTransfer = async () => {
         const parseReceiver = transaction.receiver.replace(/\s+/g, "");
