@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -23,11 +23,12 @@ import { getBalance, getSymbol, getAllNft } from "../utility/web3Call";
 import * as GooleSignIn from "expo-google-sign-in";
 import * as Google from "expo-google-app-auth";
 import { clearAsyncStorage, getAsyncStorage } from "../asyncStorage";
+import { UserContext } from "../utility/context/UserContext";
 const { width } = Dimensions.get("screen");
 const cardWidth = width / 2 - 40;
 
-const HomeScreen = ({ navigation, route }) => {
-    const { data } = route.params;
+const HomeScreen = ({ navigation }) => {
+    const { data } = useContext(UserContext);
     const [balance, setBalance] = useState("");
     const [nft, setNft] = useState([]);
     const [symbol, setSymbol] = useState("");
@@ -66,16 +67,16 @@ const HomeScreen = ({ navigation, route }) => {
         setRefreshing(false);
         const newBalance = await getBalance(data.wallet_Address);
         const currencySymbol = await getSymbol();
-        const axieIds = await getAllNft(data.wallet_Address);
-        const axies = axieIds.map((axieId) => {
-            const axies = {
-                id: axieId,
-                name: "Axie Infinity",
-                image: selectImage(axieId),
-            };
-            return axies;
-        });
-        setNft(axies);
+        // const axieIds = await getAllNft(data.wallet_Address);
+        // const axies = axieIds.map((axieId) => {
+        //     const axies = {
+        //         id: axieId,
+        //         name: "Axie Infinity",
+        //         image: selectImage(axieId),
+        //     };
+        //     return axies;
+        // });
+        // setNft(axies);
         setBalance(newBalance.toString());
         setSymbol(currencySymbol.toString());
     };
@@ -99,8 +100,8 @@ const HomeScreen = ({ navigation, route }) => {
         }
     };
 
-    useEffect(async () => {
-        await loadUserData();
+    useEffect(() => {
+        loadUserData();
     }, []);
 
     const Card = ({ item }) => {
@@ -148,25 +149,14 @@ const HomeScreen = ({ navigation, route }) => {
                 barStyle="light-content"
             />
             <View style={styles.header}>
-                <FontAwesome name="user-o" color={colors.text} size={20} />
+                <TouchableOpacity
+                    style={styles.iconContainer}
+                    onPress={() => navigation.navigate("QR Code", { data })}
+                >
+                    <FontAwesome name="user-o" size={20} />
+                </TouchableOpacity>
                 <Text style={styles.text_header}>{data.username}</Text>
                 <Text style={styles.text_header}>Balance {balance}</Text>
-                <View flexDirection="row">
-                    <TouchableOpacity
-                        style={styles.iconContainer}
-                        onPress={() =>
-                            navigation.navigate("TransferScreen", { data })
-                        }
-                    >
-                        <Icon name="send" size={20} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.iconContainer}
-                        onPress={() => navigation.navigate("QR Code", { data })}
-                    >
-                        <FontAwesome name="user-o" size={20} />
-                    </TouchableOpacity>
-                </View>
             </View>
             <Animatable.View
                 animation="fadeInUpBig"
@@ -226,30 +216,6 @@ const HomeScreen = ({ navigation, route }) => {
                         />
                     }
                 />
-                <View style={styles.button}>
-                    <TouchableOpacity
-                        style={[
-                            styles.signIn,
-                            {
-                                borderColor: COLORS.primary,
-                                borderWidth: 1,
-                                marginTop: 15,
-                            },
-                        ]}
-                        onPress={() => onSignOut()}
-                    >
-                        <Text
-                            style={[
-                                styles.textSign,
-                                {
-                                    color: COLORS.primary,
-                                },
-                            ]}
-                        >
-                            Sign Out
-                        </Text>
-                    </TouchableOpacity>
-                </View>
             </Animatable.View>
         </View>
     );

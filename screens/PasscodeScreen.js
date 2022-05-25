@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -12,13 +12,20 @@ import {
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { useTheme } from "react-native-paper";
-import { getAsyncStorage } from "../asyncStorage";
+import { clearAsyncStorage, getAsyncStorage } from "../asyncStorage";
 import CryptoJS from "crypto-js";
 import COLORS from "../colors";
-import { createWallet, transferToken, transferNFT } from "../utility/web3Call";
+import { recoveryIdentity, transferToken } from "../network/IDM";
+import {
+    createWallet,
+    transferNFT,
+    createUserIdentity,
+    getSignerUserById,
+} from "../utility/web3Call";
+import { UserContext } from "../utility/context/UserContext";
 
-const PasscodeScreen = ({ navigation, route }) => {
-    const { data } = route.params;
+const PasscodeScreen = ({ navigation }) => {
+    const { data } = useContext(UserContext);
     const { colors } = useTheme();
     const [isNewDevice, setNewDevice] = useState(false);
     const [isLoading, setLoading] = useState(false);
@@ -46,7 +53,7 @@ const PasscodeScreen = ({ navigation, route }) => {
             },
             {
                 text: "OK",
-                onPress: () => navigation.navigate("HomeScreen", { data }),
+                onPress: () => navigation.navigate("BottomNavigator"),
             },
         ]);
     };
@@ -59,20 +66,26 @@ const PasscodeScreen = ({ navigation, route }) => {
             },
             {
                 text: "OK",
-                onPress: () => navigation.navigate("HomeScreen", { data }),
+                onPress: () => navigation.navigate("BottomNavigator"),
             },
         ]);
     };
 
-    const onDecrypt = (encrypted, password) => {
+    const onDecrypt = async (encrypted, password) => {
         const decrypted = CryptoJS.AES.decrypt(encrypted, password);
         if (decrypted.toString(CryptoJS.enc.Utf8) != "") {
             if (data.onTransfer) {
                 setLoading(true);
-                const wallet = createWallet(
+                // transferToken(wallet, data.receiver, parseInt(data.amount))
+                // .then((value) =>
+                //     onSuccess(value.toString())
+                // )
+                // .catch((err) => onFailed(err.message));
+                transferToken(
+                    data.receiver,
+                    data.amount,
                     decrypted.toString(CryptoJS.enc.Utf8)
-                );
-                transferToken(wallet, data.receiver, parseInt(data.amount))
+                )
                     .then((value) =>
                         onSuccess(value.transactionHash.toString())
                     )
@@ -88,7 +101,7 @@ const PasscodeScreen = ({ navigation, route }) => {
                     )
                     .catch((err) => onFailed(err.message));
             } else {
-                navigation.navigate("HomeScreen", { data });
+                navigation.navigate("BottomNavigator");
             }
         } else {
             Alert.alert("Wrong Passcode", "Your passcode is invalid ! ", [
@@ -106,17 +119,27 @@ const PasscodeScreen = ({ navigation, route }) => {
             onDecrypt(data.backup, password);
         }
     };
-
+    const restoreFromChain = async () => {
+        data.isRestore = true;
+        navigation.navigate("CreateWalletScreen");
+    };
+    const onRestoreButton = () => {
+        Alert.alert("Restore", "Would you like restore from Cloud or Chain", [
+            { text: "Cloud", style: "cancel" },
+            { text: "Chain", onPress: () => restoreFromChain() },
+        ]);
+    };
     useEffect(async () => {
         const encrypted = await getAsyncStorage(data.userId);
-        if (encrypted == null && data.backup != "") {
+        console.log("encrypted : ", encrypted);
+        if (encrypted == null) {
             setNewDevice(true);
             Alert.alert(
                 "New device",
                 "Look like you Sign In from new device! \n Do you want restore ?",
                 [
                     { text: "Cancel", style: "cancel" },
-                    { text: "Restore", style: "cancel" },
+                    { text: "Restore", onPress: () => onRestoreButton() },
                 ]
             );
         }

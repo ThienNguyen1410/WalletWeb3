@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import {
     View,
     Text,
@@ -13,9 +13,10 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
 import COLORS from "../colors";
 import { useTheme } from "react-native-paper";
+import { UserContext } from "../utility/context/UserContext";
 
-const CreateUserScreen = ({ navigation, route }) => {
-    const { data } = route.params;
+const CreateUserScreen = ({ navigation }) => {
+    const { data } = useContext(UserContext);
 
     const { colors } = useTheme();
     const textInputChange = (val) => {

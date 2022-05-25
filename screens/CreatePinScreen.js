@@ -1,4 +1,4 @@
-import React, { useId } from "react";
+import React, { useContext, useState } from "react";
 import {
     View,
     Text,
@@ -7,18 +7,22 @@ import {
     Platform,
     StyleSheet,
     StatusBar,
+    ActivityIndicator,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
-import { useTheme } from "react-native-paper";
 import { database } from "../firebase/config";
+import { useTheme } from "react-native-paper";
 import { setAsyncStorage } from "../asyncStorage";
 import COLORS from "../colors";
 import CryptoES from "crypto-es";
 import CryptoJS from "crypto-js";
+import { createUserIdentity, recoveryIdentity } from "../network/IDM";
+import { UserContext } from "../utility/context/UserContext";
 
-const CreatePinScreen = ({ navigation, route }) => {
-    const { data } = route.params;
+const CreatePinScreen = ({ navigation }) => {
+    const { data } = useContext(UserContext);
     const { colors } = useTheme();
+    const [isLoading, setLoading] = useState(false);
 
     const firstInput = React.useRef();
     const secondInput = React.useRef();
@@ -35,25 +39,36 @@ const CreatePinScreen = ({ navigation, route }) => {
         6: "",
     });
 
-    const onCreatePin = (passcode) => {
-        data.pin = passcode;
-        const password = JSON.stringify(passcode) + data.userId;
-        const encrypted = CryptoES.AES.encrypt(data.pk, password).toString();
+    const onCreatePin = async (passcode) => {
+        try {
+            data.pin = passcode;
+            const password = JSON.stringify(passcode) + data.userId;
+            const encrypted = CryptoES.AES.encrypt(
+                data.pk,
+                password
+            ).toString();
+            setLoading(true);
+            if (data.isRestore) {
+                console.log("Recovering...", data.email);
+                await recoveryIdentity(data.email, data.pk);
+            } else {
+                await createUserIdentity(data.email, data.pk);
+            }
+            database.ref("/users/" + data.userId).set({
+                username: data.username,
+                wallet_Address: data.walletAddress,
+                email: data.email,
+                created_at: Date.now(),
+                wallet_Address: data.wallet_Address,
+                backup: encrypted,
+            });
 
-        database.ref("/users/" + data.userId).set({
-            username: data.username,
-            wallet_Address: data.walletAddress,
-            email: data.email,
-            profile_picture: data.profile_picture,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            created_at: Date.now(),
-            wallet_Address: data.wallet_Address,
-            backup: encrypted,
-        });
-
-        setAsyncStorage(data.userId, encrypted);
-        navigation.navigate("QR Code", { data });
+            setAsyncStorage(data.userId, encrypted);
+            navigation.navigate("QR Code");
+        } catch (err) {
+            console.log(err);
+            alert(err);
+        }
     };
 
     return (
@@ -65,6 +80,9 @@ const CreatePinScreen = ({ navigation, route }) => {
             <View style={styles.header}>
                 <Text style={styles.text_header}>Welcome :{data.username}</Text>
             </View>
+            {isLoading ? (
+                <ActivityIndicator size="large" color="#00ff00" />
+            ) : null}
             <Animatable.View
                 animation="fadeInUpBig"
                 style={[
@@ -184,6 +202,7 @@ const CreatePinScreen = ({ navigation, route }) => {
                             },
                         ]}
                         onPress={() => onCreatePin(passcode)}
+                        disabled={isLoading}
                     >
                         <Text
                             style={[

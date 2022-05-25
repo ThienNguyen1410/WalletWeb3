@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     Text,
     StyleSheet,
@@ -9,12 +9,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import COLORS from "../colors";
 import { generateMnemonic, generateWallet } from "../utility";
+import { UserContext } from "../utility/context/UserContext";
 
 const CreateWalletScreen = ({ navigation, route }) => {
-    const { data } = route.params;
+    const { data } = useContext(UserContext);
+
     const [isLoading, setLoading] = useState(false);
 
-    const onCreateWallet = () => {
+    const onCreateWallet = async () => {
         const mnemonic = generateMnemonic();
         const wallet = generateWallet(mnemonic);
         data.wallet_Address = wallet.address;

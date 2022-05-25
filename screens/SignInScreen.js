@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     Text,
     StyleSheet,
@@ -18,28 +18,13 @@ import { GoogleAuthProvider } from "firebase/auth";
 import * as Google from "expo-google-app-auth";
 import * as GooleSignIn from "expo-google-sign-in";
 import { setAsyncStorage } from "../asyncStorage";
+import { UserContext } from "../utility/context/UserContext";
+import { getSignerUserById, getUserWalletById } from "../network/IDM";
 
 const SignInScreen = ({ navigation }) => {
     const { colors } = useTheme();
     const [isLoading, setLoading] = useState(false);
-    const [data, setData] = useState({
-        email: "",
-        profile_picture: "",
-        first_name: "",
-        last_name: "",
-        created_at: "",
-        username: "",
-        userId: "",
-        pin: {},
-        pk: "",
-        walletAddress: "",
-        password: "",
-        backup: "",
-        check_textInputChange: false,
-        secureTextEntry: true,
-        isValidUser: true,
-        isValidPassword: true,
-    });
+    const { data, setData } = useContext(UserContext);
     const iosClientId =
         "38761714098-up0ai7rhhvojehmu11fgct1bsksqij6u.apps.googleusercontent.com";
     const androidClientId =
@@ -100,60 +85,65 @@ const SignInScreen = ({ navigation }) => {
         }
     };
 
-    const onGoogleSignIn = (googleUser) => {
+    const handleNewUser = async (result) => {
+        try {
+            const userWallet = await getUserWalletById(result.user.email);
+            console.log("UserWalet : ", userWallet);
+            if (userWallet == "0x0000000000000000000000000000000000000000") {
+                let data = {
+                    email: result.user.email,
+                    profile_picture: result.additionalUserInfo.profile.picture,
+                    first_name: result.additionalUserInfo.profile.given_name,
+                    last_name: result.additionalUserInfo.profile.family_name,
+                    created_at: Date.now(),
+                    username: "",
+                    userId: result.user.uid,
+                    pin: {},
+                    pk: "",
+                    wallet_Address: "",
+                    backup: "",
+                };
+                setData(data);
+                navigation.navigate("CreateUserScreen");
+            } else {
+                database
+                    .ref("/users/" + result.user.uid)
+                    .once("value")
+                    .then(
+                        (snapshot) => {
+                            const username = snapshot.val().username;
+                            const userId = result.user.uid;
+                            const email = snapshot.val().email;
+                            const wallet_Address = userWallet;
+                            const backup = snapshot.val().backup;
+                            const data = {
+                                username,
+                                userId,
+                                email,
+                                wallet_Address,
+                                backup,
+                            };
+                            setData(data);
+                            navigation.navigate("Passcode");
+                            setLoading(false);
+                        },
+                        (err) => console.log(err)
+                    );
+            }
+        } catch (err) {
+            alert(err);
+        }
+    };
+
+    const onGoogleSignIn = async (googleUser) => {
         setLoading(true);
+        setAsyncStorage("accessToken", googleUser.accessToken);
         var credential = GoogleAuthProvider.credential(
             googleUser.idToken,
             googleUser.accessToken
         );
-        auth.signInWithCredential(credential)
-            .then((result) => {
-                setAsyncStorage("accessToken", googleUser.accessToken);
-                if (result.additionalUserInfo.isNewUser) {
-                    let data = {
-                        email: result.user.email,
-                        profile_picture:
-                            result.additionalUserInfo.profile.picture,
-                        first_name:
-                            result.additionalUserInfo.profile.given_name,
-                        last_name:
-                            result.additionalUserInfo.profile.family_name,
-                        created_at: Date.now(),
-                        username: "",
-                        userId: result.user.uid,
-                        pin: {},
-                        pk: "",
-                        wallet_Address: "",
-                        backup: "",
-                    };
-                    navigation.navigate("CreateUserScreen", { data });
-                } else {
-                    database
-                        .ref("/users/" + result.user.uid)
-                        .once("value")
-                        .then(
-                            (snapshot) => {
-                                if (snapshot.child("wallet_Address").exists()) {
-                                    const username = snapshot.val().username;
-                                    const userId = result.user.uid;
-                                    const wallet_Address =
-                                        snapshot.val().wallet_Address;
-                                    const backup = snapshot.val().backup;
-                                    const data = {
-                                        username,
-                                        userId,
-                                        wallet_Address,
-                                        backup,
-                                    };
-                                    navigation.navigate("Passcode", { data });
-                                    setLoading(false);
-                                }
-                            },
-                            (err) => console.log(err)
-                        );
-                }
-            })
-            .catch((err) => console.log(err));
+        const result = await auth.signInWithCredential(credential);
+        await handleNewUser(result);
     };
     //Build Standard Alone app
     // const initGoogleSignIn = async () => {
@@ -200,7 +190,7 @@ const SignInScreen = ({ navigation }) => {
             if (type == "success") {
                 // Build Standard Alone App
                 // onGoogleSignIn(user.auth);
-                onGoogleSignIn(result);
+                await onGoogleSignIn(result);
             } else {
                 Alert.alert("Cancel SignIn", "Sign In by Google canceled ", [
                     {

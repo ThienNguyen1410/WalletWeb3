@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useContext } from "react";
 
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 
 import QRCode from "react-native-qrcode-svg";
 import COLORS from "../colors";
+import { UserContext } from "../utility/context/UserContext";
 
-const QrCodeScreen = ({ navigation, route }) => {
-    const { data } = route.params;
+const QrCodeScreen = ({ navigation }) => {
+    const { data } = useContext(UserContext);
 
     return (
         <View style={styles.MainContainer}>
@@ -22,7 +23,7 @@ const QrCodeScreen = ({ navigation, route }) => {
             </Text>
 
             <TouchableOpacity
-                onPress={() => navigation.navigate("HomeScreen", { data })}
+                onPress={() => navigation.navigate("BottomNavigator")}
                 style={[
                     styles.button,
                     {

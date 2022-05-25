@@ -1,9 +1,12 @@
 import "react-native-gesture-handler";
 import React from "react";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import COLORS from "./colors";
-import TransferScreen from "./screens/TransferScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import COLORS from "../colors";
+import { View } from "react-native";
+import HomeScreen from "../screens/HomeScreen";
+import TransferScreen from "../screens/TransferScreen";
+import TransactionScreen from "../screens/TransferScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -16,19 +19,9 @@ const BottomNavigator = () => {
                     borderTopWidth: 0,
                     elevation: 0,
                 },
-                headerShown: false,
-                headerBackTitleVisible: false,
-                headerLeft: null,
-                showLabel: false,
                 activeTintColor: COLORS.primary,
-                tabBarActiveTintColor: "#F9813A",
+                headerShown: false,
                 tabBarShowLabel: false,
-                tabBarStyle: [
-                    {
-                        display: "flex",
-                    },
-                    null,
-                ],
             }}
         >
             <Tab.Screen
@@ -41,9 +34,10 @@ const BottomNavigator = () => {
                 }}
             />
             <Tab.Screen
-                name="Search"
+                name="Transfer"
                 component={TransferScreen}
                 options={{
+                    tabBarStyle: { display: "none" },
                     tabBarIcon: ({ color }) => (
                         <View
                             style={{
@@ -60,11 +54,20 @@ const BottomNavigator = () => {
                             }}
                         >
                             <Icon
-                                name="search"
+                                name="swap-horiz"
                                 color={COLORS.primary}
                                 size={28}
                             />
                         </View>
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Cart"
+                component={TransactionScreen}
+                options={{
+                    tabBarIcon: ({ color }) => (
+                        <Icon name="history" color={color} size={28} />
                     ),
                 }}
             />

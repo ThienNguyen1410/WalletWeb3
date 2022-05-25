@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     Text,
     StyleSheet,
@@ -16,9 +16,10 @@ import * as Animatable from "react-native-animatable";
 import { useTheme } from "react-native-paper";
 import { database } from "../firebase/config";
 import { Picker } from "@react-native-picker/picker";
+import { UserContext } from "../utility/context/UserContext";
 
 const TransferScreen = ({ navigation, route }) => {
-    var { data } = route.params;
+    var { data, setData } = useContext(UserContext);
     const { colors } = useTheme();
     const [isLoading, setLoading] = useState(false);
     const [transaction, setTransaction] = React.useState({
@@ -32,13 +33,12 @@ const TransferScreen = ({ navigation, route }) => {
 
     const onTransfer = async () => {
         const parseReceiver = transaction.receiver.replace(/\s+/g, "");
-
-        data = {
+        setData({
             ...data,
             onTransfer: true,
             receiver: parseReceiver,
             amount: transaction.amount,
-        };
+        });
 
         navigation.navigate("Passcode", { data });
     };
