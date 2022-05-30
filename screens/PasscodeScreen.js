@@ -12,20 +12,21 @@ import {
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { useTheme } from "react-native-paper";
-import { clearAsyncStorage, getAsyncStorage } from "../asyncStorage";
+import {
+    clearAsyncStorage,
+    getAsyncStorage,
+    setAsyncStorage,
+} from "../asyncStorage";
 import CryptoJS from "crypto-js";
+import CryptoES from "crypto-es";
 import COLORS from "../colors";
 import { recoveryIdentity, transferToken } from "../network/IDM";
-import {
-    createWallet,
-    transferNFT,
-    createUserIdentity,
-    getSignerUserById,
-} from "../utility/web3Call";
+import { createWallet, transferNFT } from "../utility/web3Call";
 import { UserContext } from "../utility/context/UserContext";
 
-const PasscodeScreen = ({ navigation }) => {
+const PasscodeScreen = ({ navigation, route }) => {
     const { data } = useContext(UserContext);
+    const { path } = route.params;
     const { colors } = useTheme();
     const [isNewDevice, setNewDevice] = useState(false);
     const [isLoading, setLoading] = useState(false);
@@ -71,30 +72,45 @@ const PasscodeScreen = ({ navigation }) => {
         ]);
     };
 
-    const onDecrypt = async (encrypted, password) => {
-        const decrypted = CryptoJS.AES.decrypt(encrypted, password);
-        if (decrypted.toString(CryptoJS.enc.Utf8) != "") {
+    async function handlePasscodeForSignIn(data) {
+        const encrypted = await getAsyncStorage(data.userId);
+        data.parent = "";
+        console.log("encrypted : ", encrypted);
+        if (encrypted == null) {
+            setNewDevice(true);
+            Alert.alert(
+                "New device",
+                "Look like you Sign In from new device! \n Do you want restore ?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Restore", onPress: () => onRestoreButton() },
+                ]
+            );
+        } else {
+            await restoreFromLocal(data);
+            if (data.pk == "") {
+                Alert.alert("Wrong Passcode", "Your passcode is invalid ! ", [
+                    { text: "OK", style: "cancel" },
+                ]);
+            } else {
+                navigation.navigate("BottomNavigator");
+            }
+        }
+    }
+
+    async function handlePasscodeForTransfer(data) {
+        await restoreFromLocal(data);
+        if (data.pk != "") {
             if (data.onTransfer) {
                 setLoading(true);
-                // transferToken(wallet, data.receiver, parseInt(data.amount))
-                // .then((value) =>
-                //     onSuccess(value.toString())
-                // )
-                // .catch((err) => onFailed(err.message));
-                transferToken(
-                    data.receiver,
-                    data.amount,
-                    decrypted.toString(CryptoJS.enc.Utf8)
-                )
+                transferToken(data.receiver, data.amount, data.pk)
                     .then((value) =>
                         onSuccess(value.transactionHash.toString())
                     )
                     .catch((err) => onFailed(err.message));
             } else if (data.onTransferNFT) {
                 setLoading(true);
-                const wallet = createWallet(
-                    decrypted.toString(CryptoJS.enc.Utf8)
-                );
+                const wallet = createWallet(data.pk);
                 transferNFT(wallet, data.receiver, data.tokenId)
                     .then((value) =>
                         onSuccess(value.transactionHash.toString())
@@ -108,43 +124,63 @@ const PasscodeScreen = ({ navigation }) => {
                 { text: "OK", style: "cancel" },
             ]);
         }
-    };
-    const onPasscode = (passcode) => {
-        const password = JSON.stringify(passcode) + data.userId;
-        if (!isNewDevice) {
-            getAsyncStorage(data.userId).then((encrypted) => {
-                onDecrypt(encrypted, password);
-            });
-        } else {
-            onDecrypt(data.backup, password);
+    }
+
+    const restoreFromCloud = async (data) => {
+        try {
+            const password = data.pin + data.userId;
+            const decrypted = CryptoJS.AES.decrypt(data.backup, password);
+            data.pk = decrypted.toString(CryptoJS.enc.Utf8);
+            console.log("Password :", password);
+            const password2 = data.pin + data.userId;
+            const encrypted = CryptoES.AES.encrypt(
+                data.pk,
+                password2
+            ).toString();
+            setAsyncStorage(data.userId, encrypted);
+        } catch (err) {
+            console.log(err);
         }
     };
+
+    const restoreFromLocal = async (data) => {
+        try {
+            const encrypted = await getAsyncStorage(data.userId);
+            const password = data.pin + data.userId;
+            const decrypted = CryptoJS.AES.decrypt(encrypted, password);
+            data.pk = decrypted.toString(CryptoJS.enc.Utf8);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const onPasscode = async (passcode) => {
+        data.pin =
+            passcode[1] +
+            passcode[2] +
+            passcode[3] +
+            passcode[4] +
+            passcode[5] +
+            passcode[6];
+        if (data.onTransfer || data.onTransferNFT) {
+            await handlePasscodeForTransfer(data);
+        } else {
+            await handlePasscodeForSignIn(data);
+        }
+    };
+
     const restoreFromChain = async () => {
         data.isRestore = true;
-        navigation.navigate("CreateWalletScreen");
+        navigation.navigate("CreateWalletScreen", {
+            walletAddress: data.walletAddress,
+        });
     };
     const onRestoreButton = () => {
         Alert.alert("Restore", "Would you like restore from Cloud or Chain", [
-            { text: "Cloud", style: "cancel" },
+            { text: "Cloud", onPress: () => restoreFromCloud(data) },
             { text: "Chain", onPress: () => restoreFromChain() },
         ]);
     };
-    useEffect(async () => {
-        const encrypted = await getAsyncStorage(data.userId);
-        console.log("encrypted : ", encrypted);
-        if (encrypted == null) {
-            setNewDevice(true);
-            Alert.alert(
-                "New device",
-                "Look like you Sign In from new device! \n Do you want restore ?",
-                [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Restore", onPress: () => onRestoreButton() },
-                ]
-            );
-        }
-    }, []);
-
     return (
         <View style={styles.container}>
             <StatusBar

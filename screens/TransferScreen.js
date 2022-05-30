@@ -40,11 +40,11 @@ const TransferScreen = ({ navigation, route }) => {
             amount: transaction.amount,
         });
 
-        navigation.navigate("Passcode", { data });
+        navigation.navigate("Passcode", { path: "" });
     };
 
     const onReceiverChange = (val) => {
-        if (val.trim().length >= 42) {
+        if (val.trim().length >= 0) {
             setTransaction({
                 ...transaction,
                 receiver: val,
@@ -78,7 +78,7 @@ const TransferScreen = ({ navigation, route }) => {
     };
 
     const handleValidUser = (val) => {
-        if (val.trim().length >= 42) {
+        if (val.trim().length >= 0) {
             setTransaction({
                 ...transaction,
                 isValidUser: true,

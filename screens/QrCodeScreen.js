@@ -1,13 +1,33 @@
 import React, { useContext } from "react";
 
-import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Text, Alert } from "react-native";
 
 import QRCode from "react-native-qrcode-svg";
 import COLORS from "../colors";
+import { clearAsyncStorage } from "../asyncStorage";
+import * as GooleSignIn from "expo-google-sign-in";
 import { UserContext } from "../utility/context/UserContext";
 
 const QrCodeScreen = ({ navigation }) => {
     const { data } = useContext(UserContext);
+    const onSignOut = async () => {
+        try {
+            if (!__DEV__) {
+                await GooleSignIn.signOutAsync();
+                clearAsyncStorage();
+            } else {
+                clearAsyncStorage();
+            }
+            navigation.navigate("SignInScreen");
+        } catch ({ message }) {
+            Alert.alert("Error", message, [
+                {
+                    text: "OK",
+                    style: "cancel",
+                },
+            ]);
+        }
+    };
 
     return (
         <View style={styles.MainContainer}>
@@ -42,6 +62,28 @@ const QrCodeScreen = ({ navigation }) => {
                     ]}
                 >
                     Go to Wallet
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => onSignOut()}
+                style={[
+                    styles.button,
+                    {
+                        borderColor: COLORS.primary,
+                        borderWidth: 1,
+                        marginTop: 15,
+                    },
+                ]}
+            >
+                <Text
+                    style={[
+                        styles.textSign,
+                        {
+                            color: COLORS.primary,
+                        },
+                    ]}
+                >
+                    Sign out
                 </Text>
             </TouchableOpacity>
         </View>

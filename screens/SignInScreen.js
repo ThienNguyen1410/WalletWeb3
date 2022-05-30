@@ -19,7 +19,12 @@ import * as Google from "expo-google-app-auth";
 import * as GooleSignIn from "expo-google-sign-in";
 import { setAsyncStorage } from "../asyncStorage";
 import { UserContext } from "../utility/context/UserContext";
-import { getSignerUserById, getUserWalletById } from "../network/IDM";
+import {
+    getSignedUser,
+    getSignerUserById,
+    getUserWalletById,
+    getWalletById,
+} from "../network/IDM";
 
 const SignInScreen = ({ navigation }) => {
     const { colors } = useTheme();
@@ -87,9 +92,11 @@ const SignInScreen = ({ navigation }) => {
 
     const handleNewUser = async (result) => {
         try {
-            const userWallet = await getUserWalletById(result.user.email);
-            console.log("UserWalet : ", userWallet);
-            if (userWallet == "0x0000000000000000000000000000000000000000") {
+            const signer = await getSignerUserById(result.user.email);
+            const userWallet = await getWalletById(result.user.email);
+            console.log("Siger : ", signer);
+            console.log("Wallet : ", userWallet);
+            if (signer == "0x0000000000000000000000000000000000000000") {
                 let data = {
                     email: result.user.email,
                     profile_picture: result.additionalUserInfo.profile.picture,
@@ -100,7 +107,8 @@ const SignInScreen = ({ navigation }) => {
                     userId: result.user.uid,
                     pin: {},
                     pk: "",
-                    wallet_Address: "",
+                    walletAddress: "",
+                    isNewUser: true,
                     backup: "",
                 };
                 setData(data);
@@ -114,17 +122,17 @@ const SignInScreen = ({ navigation }) => {
                             const username = snapshot.val().username;
                             const userId = result.user.uid;
                             const email = snapshot.val().email;
-                            const wallet_Address = userWallet;
+                            const walletAddress = userWallet;
                             const backup = snapshot.val().backup;
                             const data = {
                                 username,
                                 userId,
                                 email,
-                                wallet_Address,
+                                walletAddress,
                                 backup,
                             };
                             setData(data);
-                            navigation.navigate("Passcode");
+                            navigation.navigate("Passcode", { path: "signin" });
                             setLoading(false);
                         },
                         (err) => console.log(err)
@@ -185,11 +193,13 @@ const SignInScreen = ({ navigation }) => {
             //  Build Standard alone app
             // await GooleSignIn.askForPlayServicesAsync();
             // const result = await GooleSignIn.signInAsync();
+            //Build Expo Client
             const result = await Google.logInAsync(config);
             const { type, user } = result;
             if (type == "success") {
                 // Build Standard Alone App
-                // onGoogleSignIn(user.auth);
+                // await onGoogleSignIn(user.auth);
+                //Build Expo Client
                 await onGoogleSignIn(result);
             } else {
                 Alert.alert("Cancel SignIn", "Sign In by Google canceled ", [

@@ -20,9 +20,6 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import COLORS from "../colors";
 import { useTheme } from "react-native-paper";
 import { getBalance, getSymbol, getAllNft } from "../utility/web3Call";
-import * as GooleSignIn from "expo-google-sign-in";
-import * as Google from "expo-google-app-auth";
-import { clearAsyncStorage, getAsyncStorage } from "../asyncStorage";
 import { UserContext } from "../utility/context/UserContext";
 const { width } = Dimensions.get("screen");
 const cardWidth = width / 2 - 40;
@@ -54,7 +51,6 @@ const HomeScreen = ({ navigation }) => {
 
     const selectImage = (axieId) => {
         var url = "";
-
         if (axiesImage[axieId] != null) {
             url = axiesImage[axieId];
         } else {
@@ -65,7 +61,7 @@ const HomeScreen = ({ navigation }) => {
 
     const loadUserData = async () => {
         setRefreshing(false);
-        const newBalance = await getBalance(data.wallet_Address);
+        const newBalance = await getBalance(data.walletAddress);
         const currencySymbol = await getSymbol();
         // const axieIds = await getAllNft(data.wallet_Address);
         // const axies = axieIds.map((axieId) => {
@@ -79,25 +75,6 @@ const HomeScreen = ({ navigation }) => {
         // setNft(axies);
         setBalance(newBalance.toString());
         setSymbol(currencySymbol.toString());
-    };
-
-    const onSignOut = async () => {
-        try {
-            if (!__DEV__) {
-                await GooleSignIn.signOutAsync();
-                clearAsyncStorage();
-            } else {
-                clearAsyncStorage();
-            }
-            navigation.navigate("SignInScreen");
-        } catch ({ message }) {
-            Alert.alert("Error", message, [
-                {
-                    text: "OK",
-                    style: "cancel",
-                },
-            ]);
-        }
     };
 
     useEffect(() => {

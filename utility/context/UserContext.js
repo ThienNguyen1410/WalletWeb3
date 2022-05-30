@@ -18,6 +18,7 @@ export const UserProvider = ({ children }) => {
         backup: "",
         check_textInputChange: false,
         secureTextEntry: true,
+        isNewUser: false,
         isRestore: false,
         isValidUser: true,
         isValidPassword: true,

@@ -15,8 +15,7 @@ import { useTheme } from "react-native-paper";
 import { setAsyncStorage } from "../asyncStorage";
 import COLORS from "../colors";
 import CryptoES from "crypto-es";
-import CryptoJS from "crypto-js";
-import { createUserIdentity, recoveryIdentity } from "../network/IDM";
+import { createIdentity, createUserIdentity } from "../network/IDM";
 import { UserContext } from "../utility/context/UserContext";
 
 const CreatePinScreen = ({ navigation }) => {
@@ -38,32 +37,48 @@ const CreatePinScreen = ({ navigation }) => {
         5: "",
         6: "",
     });
-
-    const onCreatePin = async (passcode) => {
+    const createNewUser = async (data) => {
+        await createIdentity(data.email, data.pk);
+        data.isNewUser = false;
+    };
+    const backupToCloud = async (data) => {
         try {
-            data.pin = passcode;
-            const password = JSON.stringify(passcode) + data.userId;
-            const encrypted = CryptoES.AES.encrypt(
-                data.pk,
-                password
-            ).toString();
-            setLoading(true);
-            if (data.isRestore) {
-                console.log("Recovering...", data.email);
-                await recoveryIdentity(data.email, data.pk);
-            } else {
-                await createUserIdentity(data.email, data.pk);
-            }
+            const password = data.pin + data.userId;
+            const encrypted = CryptoES.AES.encrypt(data.pk, password);
+
             database.ref("/users/" + data.userId).set({
                 username: data.username,
                 wallet_Address: data.walletAddress,
                 email: data.email,
                 created_at: Date.now(),
-                wallet_Address: data.wallet_Address,
-                backup: encrypted,
+                wallet_Address: data.walletAddress,
+                backup: encrypted.toString(),
             });
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
-            setAsyncStorage(data.userId, encrypted);
+    const backupToLocal = async (data) => {
+        const password = data.pin + data.userId;
+        const encrypted = CryptoES.AES.encrypt(data.pk, password).toString();
+        setAsyncStorage(data.userId, encrypted);
+    };
+
+    const onCreatePin = async (passcode) => {
+        try {
+            data.pin =
+                passcode[1] +
+                passcode[2] +
+                passcode[3] +
+                passcode[4] +
+                passcode[5] +
+                passcode[6];
+            if (data.isNewUser) {
+                await createNewUser(data);
+            }
+            await backupToCloud(data);
+            await backupToLocal(data);
             navigation.navigate("QR Code");
         } catch (err) {
             console.log(err);

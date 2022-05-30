@@ -9,18 +9,25 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import COLORS from "../colors";
 import { generateMnemonic, generateWallet } from "../utility";
+import { recoveryIdentity, recoveryUserIdentity } from "../network/IDM";
 import { UserContext } from "../utility/context/UserContext";
 
 const CreateWalletScreen = ({ navigation, route }) => {
     const { data } = useContext(UserContext);
+    const { walletAddress } = route.params;
 
     const [isLoading, setLoading] = useState(false);
 
     const onCreateWallet = async () => {
         const mnemonic = generateMnemonic();
         const wallet = generateWallet(mnemonic);
-        data.wallet_Address = wallet.address;
         data.pk = wallet.privateKey;
+        if (data.walletAddress == "") {
+            data.walletAddress = wallet.address;
+        } else {
+            await recoveryIdentity(data.email, data.pk);
+            // await recoveryUserIdentity(data.email, data.pk);
+        }
         const mnemonics = mnemonic.split(" ");
         const seed = mnemonics;
         navigation.navigate("Seed Phrase", { seed, data });
